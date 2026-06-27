@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Generated images & provenance sidecars
+outputs/
+
+# Local model weights / caches (HF cache normally lives outside the repo)
+models/
+.cache/
+*.safetensors
+*.ckpt
+
+# Secrets / tokens
+.env
+.env.*
+*.token
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.idea/
