@@ -1,0 +1,42 @@
+# LocalAIExecution — example layered configuration.
+#
+# Copy to `localai.toml` (repo-local, wins) or pass with `--config PATH`.
+# Precedence (highest first):
+#   CLI args > env vars (LOCALAI_*) > this file
+#     (per-model table > per-capability table > [defaults])
+#   > built-in defaults (model-spec > capability > core)
+#
+# Every key below is optional; omit a key to use the built-in default.
+
+# ---------------------------------------------------------------- global
+# Applies to every capability and model unless overridden below.
+[defaults]
+output_dir = "outputs"      # where images + .json sidecars are written
+dtype      = "bfloat16"      # bfloat16 | float16 | float32
+attention  = "sdpa"          # PyTorch scaled-dot-product attention (no xformers)
+batch      = 1               # images per prompt
+# offload  = "model"         # none | model | sequential. NOTE: do NOT force
+#                            # "none" globally — FLUX's full bf16 footprint
+#                            # (~33 GB) exceeds a 32 GB card and spills to shared
+#                            # memory (~10x slower). The text-to-image capability
+#                            # already defaults to "model" offload for this reason.
+# seed     = 12345           # uncomment to fix a global seed
+
+# ---------------------------------------------------------- per-capability
+# Defaults for the text-to-image capability (all its models).
+[text-to-image]
+preset  = "square"           # square | portrait | landscape | widescreen
+offload = "model"            # keep peak VRAM ~24 GB on a 32 GB card (fast + safe)
+# width  = 1024              # explicit dims override the preset (multiple of 16)
+# height = 1024
+
+# ------------------------------------------------------------- per-model
+# Defaults for the fast, ungated default model.
+[text-to-image.models.schnell]
+steps = 4                    # schnell is distilled for ~4 steps
+# more steps do NOT improve schnell quality
+
+# Defaults for the gated, higher-fidelity model (needs an HF token + license).
+[text-to-image.models.dev]
+steps    = 28                # dev benefits from ~20-50 steps
+guidance = 3.5               # real classifier-free guidance
