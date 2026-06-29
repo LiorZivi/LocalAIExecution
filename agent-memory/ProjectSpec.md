@@ -113,12 +113,13 @@ These are stable on purpose so a caller can depend on them:
 ## Related docs
 
 Agent-facing (read these):
-- `agent-memory\adding-a-capability.md` — how to add a model/modality (no core edits).
 - `agent-memory\STRUCTURE.md` — the repo's doc layout.
+- `agent-memory\adding-a-capability.md` — how to add a model/modality (no core edits).
+- `AGENTS.md` — maintainer orientation.
 
-Human reference (in `human-docs\` — the agent normally skips these):
+Human-only — **do NOT read** (written for the human maintainer; for specifics,
+navigate the code under `src\localai\` directly instead):
 - `human-docs\HighLevelArchitecture.md` — core + adapters, and the end-to-end flow.
 - `human-docs\FilesAndModelsStructure.md` — where everything lives (repo + model cache).
 - `human-docs\skill-invocation.md` — the exact machine-readable contract + exit codes.
 - `human-docs\validation.md` — measured end-to-end results against the success criteria.
-- `AGENTS.md` — maintainer orientation.
