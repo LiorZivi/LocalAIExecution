@@ -22,16 +22,24 @@
     Model id to warm for the smoke test (default: schnell). Gated models (dev)
     are never auto-downloaded.
 
+.PARAMETER ModelsDir
+    Optional shared model-cache root. If given, sets `HF_HOME` to this path
+    (persistently for your user) so all Hugging Face models download here instead
+    of `%USERPROFILE%\.cache\huggingface`. Example: C:\AI\LocalModels\huggingface.
+
 .EXAMPLE
     ./scripts/bootstrap.ps1
 .EXAMPLE
     ./scripts/bootstrap.ps1 -Nightly -SkipSmoke
+.EXAMPLE
+    ./scripts/bootstrap.ps1 -ModelsDir C:\AI\LocalModels\huggingface
 #>
 [CmdletBinding()]
 param(
     [switch]$Nightly,
     [switch]$SkipSmoke,
-    [string]$Model = "schnell"
+    [string]$Model = "schnell",
+    [string]$ModelsDir
 )
 
 $ErrorActionPreference = "Stop"
@@ -46,6 +54,15 @@ $Localai    = Join-Path $RepoRoot ".venv\Scripts\localai.exe"
 
 function Write-Step($msg) { Write-Host "`n=== $msg ===" -ForegroundColor Cyan }
 function Fail($msg) { Write-Host "BOOTSTRAP FAILED: $msg" -ForegroundColor Red; exit 1 }
+
+# 0. Optional shared model cache root -----------------------------------------
+if ($ModelsDir) {
+    Write-Step "Setting HF_HOME to $ModelsDir (shared model cache)"
+    New-Item -ItemType Directory -Force $ModelsDir | Out-Null
+    $env:HF_HOME = $ModelsDir
+    [Environment]::SetEnvironmentVariable('HF_HOME', $ModelsDir, 'User')
+    Write-Host "HF_HOME=$env:HF_HOME (persisted for your user)"
+}
 
 # 1. Python 3.12 -------------------------------------------------------------
 Write-Step "Checking Python 3.12"

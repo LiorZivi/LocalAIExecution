@@ -47,7 +47,14 @@ Useful flags:
 ```powershell
 ./scripts/bootstrap.ps1 -SkipSmoke     # set up + verify, but don't download a model
 ./scripts/bootstrap.ps1 -Nightly       # use the cu128 *nightly* index from the start
+./scripts/bootstrap.ps1 -ModelsDir C:\AI\LocalModels\huggingface   # shared model-cache root (sets HF_HOME)
 ```
+
+> Models download to the Hugging Face cache (default
+> `%USERPROFILE%\.cache\huggingface`). Set `HF_HOME` — or pass `-ModelsDir` — to
+> keep all local models in one shared root; see
+> [`docs/FilesAndModelsStructure.md`](docs/FilesAndModelsStructure.md) §6
+> (including how to share that root with ComfyUI).
 
 ### Manual setup (equivalent)
 

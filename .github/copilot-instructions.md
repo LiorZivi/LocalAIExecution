@@ -36,8 +36,9 @@ historical intent + implementation record.
   line; the global `--json` flag emits exactly one provenance object on stdout
   (diagnostics go to stderr). Exit codes are deterministic — see
   `docs\skill-invocation.md`.
-- **Models download to the shared Hugging Face cache** (outside the repo, under
-  `%USERPROFILE%\.cache\huggingface\hub`), not into the project. After the first
+- **Models download to the Hugging Face cache** (outside the repo; default
+  `%USERPROFILE%\.cache\huggingface\hub`, relocatable via `HF_HOME`), not into the
+  project. After the first
   download the tool runs offline.
 - **Build/test:** set up with `scripts\bootstrap.ps1`; run the GPU-free unit suite
   with `.venv\Scripts\python.exe -m pytest`. **Never commit** `.venv\`, `outputs\`,

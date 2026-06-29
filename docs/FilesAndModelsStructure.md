@@ -115,11 +115,14 @@ CLI entry point), `hf.exe` (HuggingFace CLI), `pytest.exe`.
 ## 3. The model weights — the Hugging Face cache (OUTSIDE the repo)
 
 This is the answer to "where is the FLUX model downloaded?". Weights do **not**
-live in the project. They go to the shared Hugging Face cache in your user
-profile, so every project on the machine reuses one copy.
+live in the project — they go to the **Hugging Face cache**, whose location is set
+by the `HF_HOME` environment variable. By default that is
+`%USERPROFILE%\.cache\huggingface\`; **this machine relocates it to a shared model
+root** at `C:\AI\LocalModels\huggingface\` (see §6) so every HF-based tool reuses
+one copy.
 
 ```
-%USERPROFILE%\.cache\huggingface\            ← C:\Users\USER\.cache\huggingface\
+%HF_HOME%\   ← C:\AI\LocalModels\huggingface\   (default: %USERPROFILE%\.cache\huggingface\)
 ├── hub\
 │   ├── models--black-forest-labs--FLUX.1-schnell\   ← 31.4 GB (the model)
 │   │   ├── blobs\          # the actual file contents, named by hash
@@ -173,8 +176,8 @@ do, it lands beside schnell as
 
 | Path | What it is |
 |------|-----------|
-| `%USERPROFILE%\.cache\huggingface\token` | The active HF token (plain text). Written by `hf auth login`. |
-| `%USERPROFILE%\.cache\huggingface\stored_tokens` | Named tokens you've saved. |
+| `C:\AI\LocalModels\huggingface\token` | The active HF token (plain text). Written by `hf auth login`. Default location: `%USERPROFILE%\.cache\huggingface\token` — follows `HF_HOME`. |
+| `C:\AI\LocalModels\huggingface\stored_tokens` | Named tokens you've saved (follows `HF_HOME`). |
 | env `HF_TOKEN` / `HUGGING_FACE_HUB_TOKEN` | Alternative: supply the token per-shell instead of logging in. |
 
 The adapter's `_resolve_hf_token()` checks the env vars first, then this cache.
@@ -193,25 +196,82 @@ against it, but they live outside the repo anyway).
 | Docs | `docs\` | ✅ | ✅ |
 | CLI executable | `.venv\Scripts\localai.exe` | ✅ (in `.venv`) | ❌ |
 | Python libraries (torch, diffusers…) | `.venv\Lib\site-packages\` | ✅ (in `.venv`) | ❌ |
-| **FLUX model weights** | `%USERPROFILE%\.cache\huggingface\hub\` | ❌ | ❌ |
-| HF auth token | `%USERPROFILE%\.cache\huggingface\token` | ❌ | ❌ |
+| **FLUX model weights** | `C:\AI\LocalModels\huggingface\hub\` (via `HF_HOME`; default `%USERPROFILE%\.cache\huggingface\hub\`) | ❌ | ❌ |
+| HF auth token | `C:\AI\LocalModels\huggingface\token` (default `%USERPROFILE%\.cache\huggingface\token`) | ❌ | ❌ |
 | Generated images + sidecars | `outputs\` | ✅ | ❌ |
 | Your config | `localai.toml` (repo root) | ✅ | ❌ |
 
 ---
 
-## 6. Relocating the model cache
+## 6. One shared model root (relocating the cache, sharing with ComfyUI)
 
-The default cache can be huge; move it to another drive by setting an env var
-**before** first download (HuggingFace honors these):
+The Hugging Face cache can be large; its location is controlled by the `HF_HOME`
+environment variable. **This machine relocates it to a shared model root** so all
+local models live in one place (and nothing clutters the user profile):
 
 ```powershell
-$env:HF_HOME = "D:\hf"            # moves the whole huggingface cache (hub + token)
-# or only the model blobs:
-$env:HF_HUB_CACHE = "D:\hf\hub"
+# one-time: set HF_HOME persistently for the user, then move the existing cache
+[Environment]::SetEnvironmentVariable('HF_HOME','C:\AI\LocalModels\huggingface','User')
+Move-Item "$env:USERPROFILE\.cache\huggingface" "C:\AI\LocalModels\huggingface"
 ```
 
-With nothing set, the default is `%USERPROFILE%\.cache\huggingface`.
+`HF_HOME` relocates the whole HF home (hub + token + xet). With nothing set, the
+default is `%USERPROFILE%\.cache\huggingface`. (`HF_HUB_CACHE` relocates only the
+`hub\` model blobs if you want finer control.) On a fresh setup,
+`scripts\bootstrap.ps1 -ModelsDir C:\AI\LocalModels\huggingface` sets `HF_HOME`
+for you before the first download.
+
+### Sharing the root with ComfyUI
+
+Goal: one root, `C:\AI\LocalModels\`, holding every local model — both this
+project's and ComfyUI's:
+
+```
+C:\AI\LocalModels\
+├── huggingface\   ← HF_HOME (this project + any diffusers / transformers tool)
+│   └── hub\models--...\        (diffusers FLUX — sharded pipeline layout)
+└── comfyui\       ← ComfyUI model categories (single-file layout)
+    ├── checkpoints\  unet\  diffusion_models\  vae\  clip\  text_encoders\  loras\ ...
+```
+
+> **The two tools use different on-disk formats and cannot share the *same*
+> files for a model like FLUX.** diffusers needs the HF *cache* layout
+> (`hub\models--org--name\snapshots\<hash>\{transformer,vae,text_encoder,...}\`,
+> sharded); ComfyUI needs *single-file* `.safetensors` in category folders
+> (`unet\flux1-schnell.safetensors`, `vae\ae.safetensors`,
+> `clip\clip_l.safetensors`, `text_encoders\t5xxl_*.safetensors`). A model used by
+> both is therefore stored once per format — but everything still lives under the
+> one `C:\AI\LocalModels` root.
+
+Point ComfyUI at the shared root with an `extra_model_paths.yaml` in your ComfyUI
+folder (`C:\AI\ComfyUI\resources\ComfyUI\extra_model_paths.yaml`):
+
+```yaml
+local_models:
+  base_path: C:/AI/LocalModels/comfyui/
+  checkpoints: checkpoints/
+  unet: unet/
+  diffusion_models: diffusion_models/
+  vae: vae/
+  clip: clip/
+  text_encoders: text_encoders/
+  clip_vision: clip_vision/
+  loras: loras/
+  controlnet: controlnet/
+  upscale_models: upscale_models/
+  embeddings: embeddings/
+```
+
+(Alternatively, *move* ComfyUI's existing `…\ComfyUI\models` folder to
+`C:\AI\LocalModels\comfyui` and set `base_path` to it.) ComfyUI keeps reading its
+native single-file models from there; this project keeps reading the HF cache from
+`huggingface\` — both under the one root.
+
+**Advanced (optional, not recommended as default):** ComfyUI can load a
+diffusers-format model via its `DiffusersLoader` node (`models\diffusers\`), so in
+principle it could reuse this project's HF copy. For FLUX the native single-file
+loaders are the common, better-supported path, so true one-copy sharing is usually
+more trouble than a second download.
 
 ---
 
@@ -232,6 +292,7 @@ With nothing set, the default is `%USERPROFILE%\.cache\huggingface`.
 - Remove generated images: delete the repo-local `outputs\` folder.
 - Remove the environment: delete `.venv\`.
 - **Reclaim the most space** — delete the downloaded model:
-  `%USERPROFILE%\.cache\huggingface\hub\models--black-forest-labs--FLUX.1-schnell\`
-  (and the `dev` folder if present). They re-download on next use.
+  `C:\AI\LocalModels\huggingface\hub\models--black-forest-labs--FLUX.1-schnell\`
+  (the HF cache root is `%HF_HOME%`; default `%USERPROFILE%\.cache\huggingface\`).
+  Delete the `dev` folder too if present. They re-download on next use.
 - Forget the token: `hf auth logout` (or delete the `token` file).
