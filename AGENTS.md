@@ -1,50 +1,86 @@
-# LocalAIExecution — Agent Context
+# LocalAIExecution — Maintainer Context
 
-> **Read this file first, then read `LocalAIExecution-plan.md` and `LocalAIExecution-spec.md` (both in this directory) before doing anything.** This repo is being built from a reviewed implementation plan. Your job is to execute that plan.
-
-This document preserves the full context from the planning session (held 2026-06-28) so a fresh Copilot CLI session opened in this directory starts fully informed.
+> Orientation for anyone (human or agent) working on this **already-built**
+> repo. For user-facing setup/usage see `README.md`; for the machine contract
+> see `docs/skill-invocation.md`; to add a model see `docs/adding-a-capability.md`.
+> `LocalAIExecution-spec.md` and `LocalAIExecution-plan.md` remain as the
+> historical intent + implementation record (all 7 phases complete).
 
 ## What this project is
 
-A dedicated **local-AI-model execution platform** that runs AI models on the user's own GPU with **no cloud services**. It is structured as a reusable, modality-agnostic **core/runtime** plus pluggable **capability adapters**. The **first and only capability built now is text-to-image** (FLUX). Adding a future model later = a new adapter module + one registry entry, with **no changes to the core**.
+A dedicated **local-AI-model execution platform** that runs AI models on the
+user's own GPU with **no cloud services**. It is a reusable, modality-agnostic
+**core/runtime** (`localai.core`) plus pluggable **capability adapters**
+(`localai.capabilities.*`). The **first and only capability is text-to-image**
+(FLUX). Adding a future model = a new adapter module + one import line in
+`src/localai/capabilities/__init__.py`, with **no changes to the core**.
 
-This repo is standalone (it was planned inside the `ZiviDevelopmentMarketplace` plugin repo but lives on its own). It will later be published to GitHub and, later still, be invoked by a marketplace skill — so the CLI contract must stay **stable and scriptable**.
+Standalone repo, published to GitHub; intended to later be invoked by a
+marketplace skill — so the CLI contract (one-shot prints the saved absolute path
+as the final stdout line; `--json` emits one provenance object) must stay
+**stable and scriptable**.
 
-## Source of truth
+## Architecture
 
-- **`LocalAIExecution-spec.md`** — product-level intent, success criteria, non-goals, constraints.
-- **`LocalAIExecution-plan.md`** — the phased implementation plan (**7 phases, 30 steps**). **Reviewed and PASSED at 9/10.** Execute it phase by phase; each phase ends in a working, testable state. Update the `[ ]` checkboxes to `[x]` as you complete steps.
+- `localai.core` — GPU bootstrap + CUDA/sm_120 verification (`gpu.py`, `doctor`),
+  capability/model **registry** keyed by `(capability_id, model_id)`, layered
+  **config** (CLI > env `LOCALAI_*` > file[model>cap>global] > builtin), the
+  resident **engine** (load once, reuse, `unload` for VRAM hygiene), generic
+  **artifact + provenance** writer (collision-safe filenames + sidecar JSON),
+  typed **errors** with deterministic exit codes, and the **CLI dispatcher** with
+  the shared `--json` contract.
+- `localai.capabilities.text_to_image` — the FLUX adapter (schnell/dev specs,
+  size presets, PNG writer, `generate` one-shot, interactive REPL). The PNG +
+  sidecar-JSON writer is the only concrete artifact writer.
 
-## Confirmed decisions (do not re-litigate without asking the user)
+**Scope discipline:** text-to-image **only**. The seams for other models exist,
+but do **NOT** implement img2img / inpainting / upscaling / video / audio /
+language / LoRA / GUI without an explicit ask.
 
-- **Backend:** self-contained Python using Hugging Face `diffusers`, in its own virtual environment. **NOT ComfyUI** — no running-server dependency.
-- **Default model:** `black-forest-labs/FLUX.1-schnell` — Apache-2.0 (ungated, no token), distilled for **~4 steps**, guidance 0, ignores negative prompts. This is the must-work path.
-- **Optional higher-quality model:** `black-forest-labs/FLUX.1-dev` — **gated** (requires accepting the HF license + an HF token), benefits from **~20–50 steps**, uses real guidance (~3.5). Opt-in via flag.
-  - Note: schnell is *distilled* for ≤4 steps — raising its step count does **not** improve quality. The "more steps = better" lever is FLUX.1-dev.
-- **Interfaces (both required):**
-  - **One-shot CLI:** `prompt → saved PNG → print the saved absolute path as the final stdout line`, plus a `--json` machine-readable mode (output path + provenance) for the future skill.
-  - **Interactive REPL:** load the model **once** into VRAM, then generate per prompt with **no reload** (model load is ~10–40s; schnell generation is ~2s). Supports in-loop overrides and model switching with VRAM hygiene.
-- **Architecture:** a `localai` package split into:
-  - `localai.core` — GPU bootstrap + CUDA verification, capability/model **registry** (keyed by capability id + model id), layered **config** (global → per-capability → per-model precedence), generic **artifact + provenance** writer (PNG + sidecar JSON is the only concrete writer now), typed **errors** + deterministic exit codes, the top-level **CLI dispatcher** with the shared `--json` contract, and the resident **engine** (load once, reuse).
-  - `localai.capabilities.text_to_image` — the first adapter, holding all FLUX-specific behavior.
-- **Scope discipline:** text-to-image **only** is implemented now. Build the seams for other models, but do **NOT** implement img2img / inpainting / upscaling / video / audio / language / LoRA / GUI.
+## Models (current reality)
 
-## Environment (probed 2026-06-28 on this machine)
+- Default `black-forest-labs/FLUX.1-schnell` — Apache-2.0, distilled for **~4
+  steps**, guidance 0, ignores negative prompts. **Login-gated on Hugging Face:**
+  a one-time HF token is needed to *download* the weights (`HF_TOKEN` or
+  `hf auth login`); generation afterwards is fully local/offline. Missing auth
+  surfaces as **exit code 6**.
+- Optional `black-forest-labs/FLUX.1-dev` — **gated** (accept license + token),
+  guidance ~3.5, ~20–50 steps (default 28), optional negative prompt via true
+  CFG. Opt-in via `--model dev`.
+- Note: schnell is *distilled* for ≤4 steps — more steps do **not** improve it.
+  The "more steps = better" lever is dev.
+
+## Environment & critical constraints
 
 - OS: **Windows**, PowerShell. Use Windows paths (backslashes).
-- GPU: **NVIDIA RTX 5090, 32 GB, Blackwell (compute capability sm_120 / 12.0)**, driver 591.86 (observed value — yours may differ slightly; not a hard requirement).
-- Python **3.12.10** on PATH. **`torch` is NOT installed.** No ComfyUI running (port 8188 closed).
-- **CRITICAL — Blackwell / cu128:** Blackwell sm_120 is only supported by PyTorch wheels built for **CUDA 12.8 (cu128) or newer**. Install torch from `https://download.pytorch.org/whl/cu128` (fall back to the **cu128 nightly** index if the stable wheel lacks sm_120). Standard PyPI / cu121 wheels will fail or silently fall back to **CPU**. **Before any model work, verify** `torch.cuda.is_available()` is True, the device name contains "RTX 5090", and `torch.version.cuda` starts with `12.8`. The plan retires this risk first (Phase 2) behind a hard gate.
+- GPU: **NVIDIA RTX 5090, 32 GB, Blackwell (sm_120 / cap 12.0)**.
+- **Blackwell / cu128 (make-or-break):** sm_120 needs PyTorch built for **CUDA
+  12.8+**. Installed via `scripts/bootstrap.ps1` from
+  `https://download.pytorch.org/whl/cu128` (nightly cu128 as fallback). Standard
+  PyPI / cu121 wheels fail or silently fall back to CPU. Verified working:
+  **torch 2.11.0+cu128**, `cuda.is_available()` True, sm_120 in the arch list.
+  Run `localai doctor` to re-verify the GPU stack.
+- **VRAM reality:** FLUX's full bf16 footprint (~33 GB) **exceeds** the 32 GB
+  card. With `offload=none` it spills to shared memory (~330 s/image). The
+  text-to-image capability therefore **defaults to `offload=model`** (peak VRAM
+  ~24 GB). Do **not** force `offload=none` on a 32 GB card.
 
-## Leanings on the spec's open questions
+## Measured performance (RTX 5090, schnell, 1024×1024, 4 steps, offload=model)
 
-- **Default output directory:** repo-local `outputs\` (git-ignored), revisitable later.
-- **Image size:** FLUX expects dimensions in **multiples of 16**; default 1024×1024, with square / widescreen / portrait presets.
-- **Gated dev model:** wire schnell end-to-end first; add dev as a thin opt-in afterward.
+- Model load from local cache ~5 s; first generation ~35 s (one-time CUDA kernel
+  warmup); **warm resident generations ~10 s**. Same seed → byte-identical image.
 
-## How to proceed in the next session
+## Build / test / run
 
-1. Read `LocalAIExecution-plan.md` and `LocalAIExecution-spec.md` fully.
-2. Execute Phase 1 → 7 in order. **Do not skip the Phase 2 GPU/cu128 gate** — it is the make-or-break risk.
-3. Keep the CLI contract stable: one-shot prints the absolute image path as the final stdout line; `--json` for machine consumers.
-4. Update the plan's `[ ]` checkboxes to `[x]` as you complete each step.
+- Setup: `scripts/bootstrap.ps1` (creates `.venv`, installs cu128 torch + the
+  package, runs `doctor` + a real generation smoke).
+- Tests: `.venv\Scripts\python.exe -m pytest` — **63 GPU-free unit tests** (~4 s).
+- CLI entry point: `localai` (`localai.core.cli:main`). Try `localai doctor`,
+  `localai capabilities`, `localai generate "<prompt>"`, `localai interactive`.
+- Outputs land in repo-local `outputs\` (git-ignored). Never commit
+  `.venv/`, `outputs/`, the HF cache, or any token.
+
+## Exit codes
+
+0 ok · 1 unexpected · 2 invalid args · 3 CUDA/torch wrong build · 4 GPU absent ·
+5 OOM · 6 gated/token · 7 network/download · 8 unknown capability/model.
