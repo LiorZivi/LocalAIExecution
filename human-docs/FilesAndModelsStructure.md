@@ -57,11 +57,15 @@ LocalAIExecution/
 │   ├── conftest.py               # GPU-free dummy adapter fixture
 │   └── test_*.py                 # config, registry, engine, cli, sizes, ...
 │
-└── docs/
-    ├── HighLevelArchitecture.md  # this file's sibling
+├── agent-memory/                 # docs the AGENT reads (referenced from instructions)
+│   ├── STRUCTURE.md              # the repo's doc layout (read first)
+│   ├── ProjectSpec.md            # purpose + automation contract
+│   └── adding-a-capability.md    # how to add a model/modality
+│
+└── human-docs/                   # docs for HUMANS (the agent skips these)
+    ├── HighLevelArchitecture.md  # architecture + sequence diagram
     ├── FilesAndModelsStructure.md# (this file)
     ├── skill-invocation.md       # the machine --json contract
-    ├── adding-a-capability.md    # how to plug in a new model
     └── validation.md             # measured end-to-end results
 ```
 
@@ -194,7 +198,8 @@ against it, but they live outside the repo anyway).
 |-------|----------|----------|---------|
 | Source code | `src\localai\` | ✅ | ✅ |
 | Tests | `tests\` | ✅ | ✅ |
-| Docs | `docs\` | ✅ | ✅ |
+| Agent docs | `agent-memory\` | ✅ | ✅ |
+| Human docs | `human-docs\` | ✅ | ✅ |
 | CLI executable | `.venv\Scripts\localai.exe` | ✅ (in `.venv`) | ❌ |
 | Python libraries (torch, diffusers…) | `.venv\Lib\site-packages\` | ✅ (in `.venv`) | ❌ |
 | **FLUX model weights** | `C:\AI\LocalModels\huggingface\models--…\` (via `HF_HUB_CACHE`; default `%USERPROFILE%\.cache\huggingface\hub\`) | ❌ | ❌ |

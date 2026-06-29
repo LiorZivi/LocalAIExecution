@@ -9,19 +9,24 @@ These instructions are **project-wide**. Modality- or path-specific guidance
 lives in scoped files under `.github\instructions\` (applied automatically by
 path):
 
-- `.github\instructions\docs.instructions.md` — writing docs under `docs\`.
+- `.github\instructions\docs.instructions.md` — writing docs (under `agent-memory\`
+  and `human-docs\`).
 - `.github\instructions\image-capability.instructions.md` — the image capability
   group under `src\localai\capabilities\image\`.
 
-**Read these first** (they are the source of truth — keep them up to date):
-- `docs\ProjectSpec.md` — the project's purpose + the stable automation contract.
+**Read these first** — the agent's curated docs in `agent-memory\` (the source of
+truth; keep them accurate when behavior changes):
+- `agent-memory\STRUCTURE.md` — the repo's doc layout + what to read.
+- `agent-memory\ProjectSpec.md` — the project's purpose + the stable automation contract.
+- `agent-memory\adding-a-capability.md` — how to add a model/modality (no core edits).
 - `AGENTS.md` — maintainer orientation.
-- `docs\HighLevelArchitecture.md` — core + adapters and the end-to-end flow.
-- `docs\FilesAndModelsStructure.md` — where everything lives (repo + model cache).
-- `docs\adding-a-capability.md` — how to add a model/modality (no core edits).
-- `docs\skill-invocation.md` — the machine-readable `--json` contract + exit codes.
-- `docs\validation.md` — measured end-to-end results.
 - `README.md` — user-facing setup/usage.
+
+**Do NOT read `human-docs\`.** Those files (`HighLevelArchitecture.md`,
+`FilesAndModelsStructure.md`, `skill-invocation.md`, `validation.md`) are
+narrative/reference material written for the human maintainer. Everything you need
+to act is in `agent-memory\` + these instruction files; for specifics, read the
+**code** under `src\localai\` directly.
 
 `plans\LocalAIExecution-spec.md` / `plans\LocalAIExecution-plan.md` are the
 historical intent + implementation record.
@@ -44,8 +49,8 @@ historical intent + implementation record.
 - **CLI contract is stable and scriptable** (a future skill depends on it):
   one-shot commands print the saved absolute artifact path as the final stdout
   line; the global `--json` flag emits exactly one provenance object on stdout
-  (diagnostics go to stderr). Exit codes are deterministic — see
-  `docs\skill-invocation.md`.
+  (diagnostics go to stderr). Exit codes are deterministic — see the contract in
+  `agent-memory\ProjectSpec.md`.
 - **Models download to the Hugging Face cache** (outside the repo; default
   `%USERPROFILE%\.cache\huggingface\hub`, relocatable via `HF_HUB_CACHE` /
   `HF_HOME`), not into the project. After the first

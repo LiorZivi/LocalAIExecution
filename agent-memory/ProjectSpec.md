@@ -8,7 +8,7 @@
 This is the **forward-looking purpose** of the project. For the original
 implementation spec/plan see `plans\LocalAIExecution-spec.md` and
 `plans\LocalAIExecution-plan.md` (historical). For *how* it's built, see
-`docs\HighLevelArchitecture.md`.
+`human-docs\HighLevelArchitecture.md` (human reference).
 
 ---
 
@@ -47,7 +47,7 @@ unattended.
 ## Where it's headed
 
 More models and **modalities, each added as a self-contained adapter** with **no
-changes to the core** (see `docs\adding-a-capability.md`). The architecture
+changes to the core** (see `agent-memory\adding-a-capability.md`). The architecture
 already groups capabilities by modality:
 
 ```
@@ -74,8 +74,8 @@ These are stable on purpose so a caller can depend on them:
    model, artifacts[], full provenance); all diagnostics go to stderr.
 3. **Deterministic exit codes** — `0` ok · `1` unexpected · `2` invalid args ·
    `3` CUDA/torch wrong build · `4` GPU absent · `5` OOM · `6` gated/token ·
-   `7` network/download · `8` unknown capability/model. (See
-   `docs\skill-invocation.md`.)
+   `7` network/download · `8` unknown capability/model. (Full detail in
+   `human-docs\skill-invocation.md`.)
 4. **Predictable, collision-safe output paths** + a `.json` provenance sidecar
    beside every artifact.
 5. **Reproducibility** — same prompt + seed + settings reproduces the result
@@ -112,9 +112,13 @@ These are stable on purpose so a caller can depend on them:
 
 ## Related docs
 
-- `docs\HighLevelArchitecture.md` — core + adapters, and the end-to-end flow.
-- `docs\FilesAndModelsStructure.md` — where everything lives (repo + model cache).
-- `docs\adding-a-capability.md` — how to add a model/modality (no core edits).
-- `docs\skill-invocation.md` — the exact machine-readable contract + exit codes.
-- `docs\validation.md` — measured end-to-end results against the success criteria.
+Agent-facing (read these):
+- `agent-memory\adding-a-capability.md` — how to add a model/modality (no core edits).
+- `agent-memory\STRUCTURE.md` — the repo's doc layout.
+
+Human reference (in `human-docs\` — the agent normally skips these):
+- `human-docs\HighLevelArchitecture.md` — core + adapters, and the end-to-end flow.
+- `human-docs\FilesAndModelsStructure.md` — where everything lives (repo + model cache).
+- `human-docs\skill-invocation.md` — the exact machine-readable contract + exit codes.
+- `human-docs\validation.md` — measured end-to-end results against the success criteria.
 - `AGENTS.md` — maintainer orientation.

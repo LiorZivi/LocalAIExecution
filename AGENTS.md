@@ -2,9 +2,9 @@
 
 > Orientation for anyone (human or agent) working on this **already-built**
 > repo. For the project's purpose + automation contract see
-> `docs/ProjectSpec.md`; for user-facing setup/usage see `README.md`; for the
-> machine contract see `docs/skill-invocation.md`; to add a model see
-> `docs/adding-a-capability.md`.
+> `agent-memory/ProjectSpec.md`; for user-facing setup/usage see `README.md`; for
+> the machine contract see `human-docs/skill-invocation.md`; to add a model see
+> `agent-memory/adding-a-capability.md`.
 > `plans/LocalAIExecution-spec.md` and `plans/LocalAIExecution-plan.md` remain as
 > the historical intent + implementation record (all 7 phases complete).
 

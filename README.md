@@ -7,7 +7,7 @@ CLI counterpart to GUI tools like ComfyUI), structured as a reusable,
 modality-agnostic **core/runtime** plus pluggable **capability adapters**. The
 first capability built today is **text-to-image** (FLUX); additional local models
 plug in as a new adapter module + one registration line — with no changes to the
-core. See [`docs/ProjectSpec.md`](docs/ProjectSpec.md) for the purpose and the
+core. See [`agent-memory/ProjectSpec.md`](agent-memory/ProjectSpec.md) for the purpose and the
 automation contract.
 
 - **Self-contained** Python using Hugging Face `diffusers` (not ComfyUI).
@@ -56,7 +56,7 @@ Useful flags:
 > Models download to the Hugging Face cache (default
 > `%USERPROFILE%\.cache\huggingface\hub`). Set `HF_HUB_CACHE` — or pass
 > `-ModelsDir` — to put models in a clean folder of your choice; see
-> [`docs/FilesAndModelsStructure.md`](docs/FilesAndModelsStructure.md) §6
+> [`human-docs/FilesAndModelsStructure.md`](human-docs/FilesAndModelsStructure.md) §6
 > (including how to share a root with ComfyUI).
 
 ### Manual setup (equivalent)
@@ -127,7 +127,7 @@ Emits exactly one JSON object on stdout (diagnostics go to stderr):
 }
 ```
 
-See [`docs/skill-invocation.md`](docs/skill-invocation.md) for the full contract.
+See [`human-docs/skill-invocation.md`](human-docs/skill-invocation.md) for the full contract.
 
 ### Interactive mode (load once, generate many)
 
@@ -266,17 +266,18 @@ src/localai/
       text_to_image/      the FLUX adapter (first image capability)
 scripts/bootstrap.ps1   GPU-aware setup (cu128 PyTorch)
 config.example.toml     example layered configuration
-docs/                   architecture, file/model layout, contracts, validation
+agent-memory/            ProjectSpec + adding-a-capability (agent-facing)
+human-docs/              architecture, file/model layout, contracts, validation
 tests/                  fast, GPU-free unit tests
 ```
 
 For a deeper understanding see:
-- [`docs/ProjectSpec.md`](docs/ProjectSpec.md) — the project's purpose (a headless,
+- [`agent-memory/ProjectSpec.md`](agent-memory/ProjectSpec.md) — the project's purpose (a headless,
   scriptable platform for automated pipelines) and the stable automation contract.
-- [`docs/HighLevelArchitecture.md`](docs/HighLevelArchitecture.md) — how the
+- [`human-docs/HighLevelArchitecture.md`](human-docs/HighLevelArchitecture.md) — how the
   core + adapters fit together, plus a sequence diagram of the full
   invocation-to-output flow.
-- [`docs/FilesAndModelsStructure.md`](docs/FilesAndModelsStructure.md) — where
+- [`human-docs/FilesAndModelsStructure.md`](human-docs/FilesAndModelsStructure.md) — where
   every file lives, in-repo and out (the `.venv` libraries and where the FLUX
   model weights are cached on disk).
 
@@ -291,9 +292,9 @@ The unit suite is fast and **does not require a GPU**:
 ## Extending: add a new capability
 
 Adding a model/capability is an **adapter module + one manifest line** — no core
-edits. See [`docs/adding-a-capability.md`](docs/adding-a-capability.md). The
+edits. See [`agent-memory/adding-a-capability.md`](agent-memory/adding-a-capability.md). The
 machine-readable contract a skill relies on is in
-[`docs/skill-invocation.md`](docs/skill-invocation.md).
+[`human-docs/skill-invocation.md`](human-docs/skill-invocation.md).
 
 ## License
 

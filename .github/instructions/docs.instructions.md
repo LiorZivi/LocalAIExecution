@@ -1,10 +1,10 @@
 ---
-applyTo: "docs/**"
+applyTo: "agent-memory/**,human-docs/**"
 ---
 
-# Documentation conventions (docs\)
+# Documentation conventions (`agent-memory\` and `human-docs\`)
 
-When writing or editing any file under `docs\`:
+When writing or editing any doc under `agent-memory\` or `human-docs\`:
 
 - **Always reference files and folders by their full path from the project root.**
   Example: write `src\localai\capabilities\image\text_to_image\adapter.py`, not
