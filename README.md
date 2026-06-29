@@ -255,9 +255,17 @@ src/localai/
     text_to_image/      the FLUX adapter (the only capability today)
 scripts/bootstrap.ps1   GPU-aware setup (cu128 PyTorch)
 config.example.toml     example layered configuration
-docs/                   skill-invocation contract, extension guide, validation
+docs/                   architecture, file/model layout, contracts, validation
 tests/                  fast, GPU-free unit tests
 ```
+
+For a deeper understanding see:
+- [`docs/HighLevelArchitecture.md`](docs/HighLevelArchitecture.md) — how the
+  core + adapters fit together, plus a sequence diagram of the full
+  invocation-to-output flow.
+- [`docs/FilesAndModelsStructure.md`](docs/FilesAndModelsStructure.md) — where
+  every file lives, in-repo and out (the `.venv` libraries and where the FLUX
+  model weights are cached on disk).
 
 ## Running the tests
 
