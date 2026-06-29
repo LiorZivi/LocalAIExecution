@@ -1,7 +1,10 @@
 # Copilot instructions — LocalAIExecution
 
 This repo is an **already-built**, generic **local-AI execution platform**: a
-reusable, modality-agnostic core/runtime plus pluggable capability adapters.
+headless, scriptable, offline-capable platform for running AI generative models
+locally on the GPU, **built to be driven by automated/unattended pipelines** (the
+CLI / `--json` counterpart to GUI tools like ComfyUI). It is a reusable,
+modality-agnostic core/runtime plus pluggable capability adapters.
 These instructions are **project-wide**. Modality- or path-specific guidance
 lives in scoped files under `.github\instructions\` (applied automatically by
 path):
@@ -10,9 +13,16 @@ path):
 - `.github\instructions\image-capability.instructions.md` — the image capability
   group under `src\localai\capabilities\image\`.
 
-For orientation read `AGENTS.md`; user-facing details are in `README.md`,
-`docs\HighLevelArchitecture.md`, `docs\FilesAndModelsStructure.md`,
-`docs\skill-invocation.md`, and `docs\adding-a-capability.md`.
+**Read these first** (they are the source of truth — keep them up to date):
+- `docs\ProjectSpec.md` — the project's purpose + the stable automation contract.
+- `AGENTS.md` — maintainer orientation.
+- `docs\HighLevelArchitecture.md` — core + adapters and the end-to-end flow.
+- `docs\FilesAndModelsStructure.md` — where everything lives (repo + model cache).
+- `docs\adding-a-capability.md` — how to add a model/modality (no core edits).
+- `docs\skill-invocation.md` — the machine-readable `--json` contract + exit codes.
+- `docs\validation.md` — measured end-to-end results.
+- `README.md` — user-facing setup/usage.
+
 `plans\LocalAIExecution-spec.md` / `plans\LocalAIExecution-plan.md` are the
 historical intent + implementation record.
 

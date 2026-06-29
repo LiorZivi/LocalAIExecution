@@ -2,10 +2,13 @@
 
 A dedicated **local-AI model execution platform** — run AI models on your own
 GPU with **no cloud services, no paid APIs, and no running server**. It is a
-reusable, modality-agnostic **core/runtime** plus pluggable **capability
-adapters**. The first and only capability built today is **text-to-image**
-(FLUX), and it is structured so additional local models plug in as a new adapter
-module + one registration line — with no changes to the core.
+headless, scriptable platform **built for automated/unattended pipelines** (the
+CLI counterpart to GUI tools like ComfyUI), structured as a reusable,
+modality-agnostic **core/runtime** plus pluggable **capability adapters**. The
+first capability built today is **text-to-image** (FLUX); additional local models
+plug in as a new adapter module + one registration line — with no changes to the
+core. See [`docs/ProjectSpec.md`](docs/ProjectSpec.md) for the purpose and the
+automation contract.
 
 - **Self-contained** Python using Hugging Face `diffusers` (not ComfyUI).
 - **GPU-first**: installs the correct CUDA 12.8 (cu128) PyTorch for Blackwell
@@ -268,6 +271,8 @@ tests/                  fast, GPU-free unit tests
 ```
 
 For a deeper understanding see:
+- [`docs/ProjectSpec.md`](docs/ProjectSpec.md) — the project's purpose (a headless,
+  scriptable platform for automated pipelines) and the stable automation contract.
 - [`docs/HighLevelArchitecture.md`](docs/HighLevelArchitecture.md) — how the
   core + adapters fit together, plus a sequence diagram of the full
   invocation-to-output flow.
