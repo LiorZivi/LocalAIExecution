@@ -20,8 +20,10 @@ LocalAIExecution/
 ├── pyproject.toml                # packaging, deps, `localai` entry point
 ├── config.example.toml           # example layered config (copy → localai.toml)
 ├── .gitignore                    # ignores .venv/, outputs/, caches, tokens
-├── LocalAIExecution-spec.md      # historical: product intent
-├── LocalAIExecution-plan.md      # historical: phased implementation plan
+│
+├── plans/                        # historical planning record
+│   ├── LocalAIExecution-spec.md  #   product intent
+│   └── LocalAIExecution-plan.md  #   phased implementation plan
 │
 ├── scripts/
 │   └── bootstrap.ps1             # GPU-aware setup: venv + cu128 torch + verify

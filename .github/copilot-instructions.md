@@ -3,7 +3,7 @@
 This repo is an **already-built** local-AI execution platform. For orientation
 read `AGENTS.md` (maintainer context); for user-facing details see `README.md`,
 `docs/skill-invocation.md`, and `docs/adding-a-capability.md`.
-`LocalAIExecution-spec.md` / `LocalAIExecution-plan.md` are the historical
+`plans/LocalAIExecution-spec.md` / `plans/LocalAIExecution-plan.md` are the historical
 intent + implementation record.
 
 Key constraints (full detail in `AGENTS.md`):
