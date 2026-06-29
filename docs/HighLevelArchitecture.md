@@ -12,10 +12,10 @@ The project is a **local-AI execution platform**, not just an image generator.
 It separates *what is true for every model* (the **core/runtime**) from *what is
 specific to one model family* (a **capability adapter**).
 
-- **Core** (`localai.core`) — modality-agnostic. It knows nothing about FLUX,
+- **Core** (`src\localai\core`) — modality-agnostic. It knows nothing about FLUX,
   images, prompts, or steps. It knows about GPUs, a registry, layered config, a
   load-once engine, provenance, output files, errors, and the CLI.
-- **Capability adapter** (`localai.capabilities.text_to_image`) — holds *all*
+- **Capability adapter** (`src\localai\capabilities\text_to_image`) — holds *all*
   FLUX-specific behavior behind one small interface.
 
 Adding a future model (another image model, or audio/language later) is a **new
@@ -26,7 +26,7 @@ central design constraint.
 flowchart TB
     user([User / future skill]) -->|localai ...| CLI
 
-    subgraph core["localai.core  (reusable runtime — no model specifics)"]
+    subgraph core["src\localai\core  (reusable runtime — no model specifics)"]
         CLI["cli.py<br/>dispatcher + --json contract"]
         REG["registry.py<br/>(capability, model) lookup"]
         CFG["config.py<br/>layered settings precedence"]
@@ -37,7 +37,7 @@ flowchart TB
         IFACE["interfaces.py<br/>CapabilityAdapter contract"]
     end
 
-    subgraph cap["localai.capabilities.text_to_image  (the FLUX adapter)"]
+    subgraph cap["src\localai\capabilities\text_to_image  (the FLUX adapter)"]
         ADP["adapter.py<br/>load_pipeline + run"]
         MOD["models.py<br/>schnell / dev ModelSpecs"]
         SZ["sizes.py<br/>presets + validation"]
@@ -62,27 +62,27 @@ flowchart TB
 
 | Module | Responsibility |
 |--------|----------------|
-| `core/cli.py` | Builds the top-level `localai` parser, registers core commands (`doctor`, `capabilities`), asks each adapter to contribute its subcommands, dispatches, and renders the shared `--json` result. Catches all errors → `handle_error`. |
-| `core/interfaces.py` | The `CapabilityAdapter` protocol + `Artifact` / `InferenceRequest` base types. The only contract the core depends on. |
-| `core/registry.py` | Holds capabilities and their `ModelSpec`s keyed by `(capability_id, model_id)`. `discover_capabilities()` imports the manifest so adapters self-register. |
-| `core/config.py` | Resolves effective `Settings` with strict precedence (see §5). Type-coerces and validates values. |
-| `core/engine.py` | The resident engine: selects device/dtype, **loads a pipeline once** and caches it by `(capability, model)`, routes `run`, and `unload`s to free VRAM. Wraps low-level failures (OOM) in typed errors and augments the provenance record with runtime fields. |
-| `core/gpu.py` | `detect_nvidia_gpu()` (parses `nvidia-smi`), `verify_cuda()` (CUDA available + device + **sm_120 in torch's arch list**), a tiny on-device smoke, and the `doctor` report. The make-or-break Blackwell gate. |
-| `core/metadata.py` | `ProvenanceRecord` — capability/model/repo, seed, timings, device/dtype/offload, library versions, and a capability-specific `params` block. Serializes to the sidecar JSON. |
-| `core/output.py` | `register_writer(type, fn, ext)`, collision-safe `build_filename(...)`, and `write_artifact(...)` (selects the writer, writes the payload + `.json` sidecar). |
-| `core/errors.py` | The exception hierarchy with stable exit codes + `handle_error()`. |
-| `text_to_image/models.py` | The two `ModelSpec`s: `schnell` (default, ~4 steps, guidance 0) and `dev` (gated, ~28 steps, guidance ~3.5). |
-| `text_to_image/adapter.py` | `load_pipeline` (build the FLUX pipeline on cuda/bf16 + offload) and `run` (seeded generator, schnell/dev-aware kwargs, timing, provenance). Maps HF/diffusers failures → typed errors. |
-| `text_to_image/sizes.py` | Aspect presets + multiple-of-16 validation. |
-| `text_to_image/writer.py` | The concrete `image` writer (PNG with provenance embedded as text chunks). |
-| `text_to_image/cli.py` | The `generate` (one-shot) and `interactive` subcommands + arg→settings mapping. |
-| `text_to_image/repl.py` | The resident REPL: load once, per-prompt overrides, `/set` `/model` `/show` commands, model switching with VRAM hygiene. |
+| `src\localai\core\cli.py` | Builds the top-level `localai` parser, registers core commands (`doctor`, `capabilities`), asks each adapter to contribute its subcommands, dispatches, and renders the shared `--json` result. Catches all errors → `handle_error`. |
+| `src\localai\core\interfaces.py` | The `CapabilityAdapter` protocol + `Artifact` / `InferenceRequest` base types. The only contract the core depends on. |
+| `src\localai\core\registry.py` | Holds capabilities and their `ModelSpec`s keyed by `(capability_id, model_id)`. `discover_capabilities()` imports the manifest so adapters self-register. |
+| `src\localai\core\config.py` | Resolves effective `Settings` with strict precedence (see §5). Type-coerces and validates values. |
+| `src\localai\core\engine.py` | The resident engine: selects device/dtype, **loads a pipeline once** and caches it by `(capability, model)`, routes `run`, and `unload`s to free VRAM. Wraps low-level failures (OOM) in typed errors and augments the provenance record with runtime fields. |
+| `src\localai\core\gpu.py` | `detect_nvidia_gpu()` (parses `nvidia-smi`), `verify_cuda()` (CUDA available + device + **sm_120 in torch's arch list**), a tiny on-device smoke, and the `doctor` report. The make-or-break Blackwell gate. |
+| `src\localai\core\metadata.py` | `ProvenanceRecord` — capability/model/repo, seed, timings, device/dtype/offload, library versions, and a capability-specific `params` block. Serializes to the sidecar JSON. |
+| `src\localai\core\output.py` | `register_writer(type, fn, ext)`, collision-safe `build_filename(...)`, and `write_artifact(...)` (selects the writer, writes the payload + `.json` sidecar). |
+| `src\localai\core\errors.py` | The exception hierarchy with stable exit codes + `handle_error()`. |
+| `src\localai\capabilities\text_to_image\models.py` | The two `ModelSpec`s: `schnell` (default, ~4 steps, guidance 0) and `dev` (gated, ~28 steps, guidance ~3.5). |
+| `src\localai\capabilities\text_to_image\adapter.py` | `load_pipeline` (build the FLUX pipeline on cuda/bf16 + offload) and `run` (seeded generator, schnell/dev-aware kwargs, timing, provenance). Maps HF/diffusers failures → typed errors. |
+| `src\localai\capabilities\text_to_image\sizes.py` | Aspect presets + multiple-of-16 validation. |
+| `src\localai\capabilities\text_to_image\writer.py` | The concrete `image` writer (PNG with provenance embedded as text chunks). |
+| `src\localai\capabilities\text_to_image\cli.py` | The `generate` (one-shot) and `interactive` subcommands + arg→settings mapping. |
+| `src\localai\capabilities\text_to_image\repl.py` | The resident REPL: load once, per-prompt overrides, `/set` `/model` `/show` commands, model switching with VRAM hygiene. |
 
 ---
 
 ## 3. The adapter contract
 
-Every capability implements this small interface (`core/interfaces.py`). The
+Every capability implements this small interface (`src\localai\core\interfaces.py`). The
 core is written against **only** this surface:
 
 ```python
@@ -96,8 +96,8 @@ class CapabilityAdapter(Protocol):
     def run(self, pipeline, request) -> tuple[list[Artifact], ProvenanceRecord]: ...
 ```
 
-Self-registration happens on import: `text_to_image/adapter.py` ends with
-`register_capability(TextToImageAdapter())`, and `capabilities/__init__.py`
+Self-registration happens on import: `src\localai\capabilities\text_to_image\adapter.py` ends with
+`register_capability(TextToImageAdapter())`, and `src\localai\capabilities\__init__.py`
 imports the module. That single import line is the entire "plug-in" step.
 
 ---
@@ -110,16 +110,16 @@ This is the full path from process start to the saved PNG + printed path.
 sequenceDiagram
     autonumber
     actor U as User
-    participant CLI as core/cli.py<br/>main()
-    participant REG as core/registry.py
-    participant H as text_to_image/cli.py<br/>_generate_handler
-    participant CFG as core/config.py
-    participant ENG as core/engine.py
-    participant ADP as text_to_image/adapter.py
-    participant GPU as core/gpu.py
+    participant CLI as src\localai\core\cli.py<br/>main()
+    participant REG as src\localai\core\registry.py
+    participant H as src\localai\capabilities\text_to_image\cli.py<br/>_generate_handler
+    participant CFG as src\localai\core\config.py
+    participant ENG as src\localai\core\engine.py
+    participant ADP as src\localai\capabilities\text_to_image\adapter.py
+    participant GPU as src\localai\core\gpu.py
     participant HF as diffusers + HF cache
     participant TORCH as FluxPipeline (GPU)
-    participant OUT as core/output.py + writer.py
+    participant OUT as src\localai\core\output.py + writer.py
     participant FS as outputs\ on disk
 
     U->>CLI: localai generate "..."
@@ -208,7 +208,7 @@ the schnell default of `4`.
 
 ## 6. Errors & exit codes
 
-Expected failures raise a typed `LocalAIError` subclass; `core/cli.main` catches
+Expected failures raise a typed `LocalAIError` subclass; `main` in `src\localai\core\cli.py` catches
 everything and renders an actionable message to **stderr** (never a raw
 traceback), returning a deterministic code:
 

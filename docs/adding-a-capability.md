@@ -1,7 +1,7 @@
 # Adding a New Capability
 
-The platform is split into a reusable **core** (`localai.core`) and pluggable
-**capability adapters** (`localai.capabilities.*`). Adding a new model or even a
+The platform is split into a reusable **core** (`src\localai\core`) and pluggable
+**capability adapters** (`src\localai\capabilities\*`). Adding a new model or even a
 new modality is a **new adapter module + one manifest line** — with **no edits
 to the core** and no changes to existing adapters.
 
@@ -10,7 +10,7 @@ same shape.
 
 ## The contract: `CapabilityAdapter`
 
-Implement the structural protocol in `localai/core/interfaces.py`:
+Implement the structural protocol in `src\localai\core\interfaces.py`:
 
 ```python
 class CapabilityAdapter(Protocol):
@@ -30,20 +30,21 @@ typed errors/exit codes, and the `--json` contract.
 
 ## Steps
 
-1. **Create the package** `src/localai/capabilities/<your_capability>/` with:
+1. **Create the package** `src\localai\capabilities\<your_capability>\` with:
    - `models.py` — one `ModelSpec` per model (id, HF repo, pipeline class,
      defaults, gated flag, dtype, etc.).
    - `adapter.py` — your `CapabilityAdapter` implementation. At import time call
      `register_capability(YourAdapter())`.
    - `cli.py` — add your subcommand(s) in `register_cli`, mapping args to
-     settings via `core.config.load_settings`, driving `core.engine.Engine`, and
-     writing results with `core.output.write_artifact` + `core.cli.emit_result`.
+     settings via `load_settings` (`src\localai\core\config.py`), driving `Engine`
+     (`src\localai\core\engine.py`), and writing results with `write_artifact`
+     (`src\localai\core\output.py`) + `emit_result` (`src\localai\core\cli.py`).
    - A writer (if you emit a new artifact type): implement a `write_fn` and call
-     `core.output.register_writer("<type>", write_fn, "<ext>")`. The core writes
-     the `.json` sidecar for you.
+     `register_writer("<type>", write_fn, "<ext>")` (`src\localai\core\output.py`).
+     The core writes the `.json` sidecar for you.
 
 2. **Register it (the one line)** — add an import to
-   `src/localai/capabilities/__init__.py`:
+   `src\localai\capabilities\__init__.py`:
    ```python
    from localai.capabilities import your_capability  # noqa: F401
    ```
@@ -65,6 +66,6 @@ That's it. The dispatcher auto-discovers your capability, lists it under
 ## Reference
 
 The text-to-image capability under
-`src/localai/capabilities/text_to_image/` is a complete worked example:
+`src\localai\capabilities\text_to_image\` is a complete worked example:
 `models.py`, `adapter.py`, `cli.py`, `repl.py`, `sizes.py`, `writer.py`, and the
-single import line in `capabilities/__init__.py`.
+single import line in `src\localai\capabilities\__init__.py`.
