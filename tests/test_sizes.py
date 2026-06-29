@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from localai.capabilities.text_to_image.models import SCHNELL
-from localai.capabilities.text_to_image.sizes import PRESETS, resolve_size
+from localai.capabilities.image.text_to_image.models import SCHNELL
+from localai.capabilities.image.text_to_image.sizes import PRESETS, resolve_size
 from localai.core.errors import InvalidArgumentError
 
 
@@ -51,7 +51,7 @@ def test_out_of_range_rejected():
 
 def test_preset_resolves_through_settings():
     """Regression: a --preset must not be shadowed by model width/height defaults."""
-    from localai.capabilities.text_to_image.adapter import TextToImageAdapter
+    from localai.capabilities.image.text_to_image.adapter import TextToImageAdapter
     from localai.core.config import load_settings
 
     spec = SCHNELL
@@ -66,7 +66,7 @@ def test_preset_resolves_through_settings():
 
 
 def test_default_size_through_settings():
-    from localai.capabilities.text_to_image.adapter import TextToImageAdapter
+    from localai.capabilities.image.text_to_image.adapter import TextToImageAdapter
     from localai.core.config import load_settings
 
     settings = load_settings(

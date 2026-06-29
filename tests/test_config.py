@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from localai.capabilities.text_to_image.models import SCHNELL
+from localai.capabilities.image.text_to_image.models import SCHNELL
 from localai.core.config import load_settings
 
 CAP = "text-to-image"

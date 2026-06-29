@@ -15,7 +15,7 @@ specific to one model family* (a **capability adapter**).
 - **Core** (`src\localai\core`) — modality-agnostic. It knows nothing about FLUX,
   images, prompts, or steps. It knows about GPUs, a registry, layered config, a
   load-once engine, provenance, output files, errors, and the CLI.
-- **Capability adapter** (`src\localai\capabilities\text_to_image`) — holds *all*
+- **Capability adapter** (`src\localai\capabilities\image\text_to_image`) — holds *all*
   FLUX-specific behavior behind one small interface.
 
 Adding a future model (another image model, or audio/language later) is a **new
@@ -37,7 +37,7 @@ flowchart TB
         IFACE["interfaces.py<br/>CapabilityAdapter contract"]
     end
 
-    subgraph cap["src\localai\capabilities\text_to_image  (the FLUX adapter)"]
+    subgraph cap["src\localai\capabilities\image\text_to_image  (the FLUX adapter)"]
         ADP["adapter.py<br/>load_pipeline + run"]
         MOD["models.py<br/>schnell / dev ModelSpecs"]
         SZ["sizes.py<br/>presets + validation"]
@@ -71,12 +71,12 @@ flowchart TB
 | `src\localai\core\metadata.py` | `ProvenanceRecord` — capability/model/repo, seed, timings, device/dtype/offload, library versions, and a capability-specific `params` block. Serializes to the sidecar JSON. |
 | `src\localai\core\output.py` | `register_writer(type, fn, ext)`, collision-safe `build_filename(...)`, and `write_artifact(...)` (selects the writer, writes the payload + `.json` sidecar). |
 | `src\localai\core\errors.py` | The exception hierarchy with stable exit codes + `handle_error()`. |
-| `src\localai\capabilities\text_to_image\models.py` | The two `ModelSpec`s: `schnell` (default, ~4 steps, guidance 0) and `dev` (gated, ~28 steps, guidance ~3.5). |
-| `src\localai\capabilities\text_to_image\adapter.py` | `load_pipeline` (build the FLUX pipeline on cuda/bf16 + offload) and `run` (seeded generator, schnell/dev-aware kwargs, timing, provenance). Maps HF/diffusers failures → typed errors. |
-| `src\localai\capabilities\text_to_image\sizes.py` | Aspect presets + multiple-of-16 validation. |
-| `src\localai\capabilities\text_to_image\writer.py` | The concrete `image` writer (PNG with provenance embedded as text chunks). |
-| `src\localai\capabilities\text_to_image\cli.py` | The `generate` (one-shot) and `interactive` subcommands + arg→settings mapping. |
-| `src\localai\capabilities\text_to_image\repl.py` | The resident REPL: load once, per-prompt overrides, `/set` `/model` `/show` commands, model switching with VRAM hygiene. |
+| `src\localai\capabilities\image\text_to_image\models.py` | The two `ModelSpec`s: `schnell` (default, ~4 steps, guidance 0) and `dev` (gated, ~28 steps, guidance ~3.5). |
+| `src\localai\capabilities\image\text_to_image\adapter.py` | `load_pipeline` (build the FLUX pipeline on cuda/bf16 + offload) and `run` (seeded generator, schnell/dev-aware kwargs, timing, provenance). Maps HF/diffusers failures → typed errors. |
+| `src\localai\capabilities\image\text_to_image\sizes.py` | Aspect presets + multiple-of-16 validation. |
+| `src\localai\capabilities\image\text_to_image\writer.py` | The concrete `image` writer (PNG with provenance embedded as text chunks). |
+| `src\localai\capabilities\image\text_to_image\cli.py` | The `generate` (one-shot) and `interactive` subcommands + arg→settings mapping. |
+| `src\localai\capabilities\image\text_to_image\repl.py` | The resident REPL: load once, per-prompt overrides, `/set` `/model` `/show` commands, model switching with VRAM hygiene. |
 
 ---
 
@@ -96,9 +96,11 @@ class CapabilityAdapter(Protocol):
     def run(self, pipeline, request) -> tuple[list[Artifact], ProvenanceRecord]: ...
 ```
 
-Self-registration happens on import: `src\localai\capabilities\text_to_image\adapter.py` ends with
-`register_capability(TextToImageAdapter())`, and `src\localai\capabilities\__init__.py`
-imports the module. That single import line is the entire "plug-in" step.
+Self-registration happens on import: `src\localai\capabilities\image\text_to_image\adapter.py` ends with
+`register_capability(TextToImageAdapter())`. The import chain reaches it through the
+modality manifests — `src\localai\capabilities\__init__.py` imports the `image` group,
+and `src\localai\capabilities\image\__init__.py` imports `text_to_image`. Each such
+import line is the entire "plug-in" step.
 
 ---
 
@@ -112,10 +114,10 @@ sequenceDiagram
     actor U as User
     participant CLI as src\localai\core\cli.py<br/>main()
     participant REG as src\localai\core\registry.py
-    participant H as src\localai\capabilities\text_to_image\cli.py<br/>_generate_handler
+    participant H as src\localai\capabilities\image\text_to_image\cli.py<br/>_generate_handler
     participant CFG as src\localai\core\config.py
     participant ENG as src\localai\core\engine.py
-    participant ADP as src\localai\capabilities\text_to_image\adapter.py
+    participant ADP as src\localai\capabilities\image\text_to_image\adapter.py
     participant GPU as src\localai\core\gpu.py
     participant HF as diffusers + HF cache
     participant TORCH as FluxPipeline (GPU)

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from localai.capabilities.text_to_image.adapter import TextToImageAdapter
-from localai.capabilities.text_to_image.models import DEV, SCHNELL
+from localai.capabilities.image.text_to_image.adapter import TextToImageAdapter
+from localai.capabilities.image.text_to_image.models import DEV, SCHNELL
 from localai.core.config import load_settings
 from localai.core.errors import InvalidArgumentError
 
@@ -63,7 +63,7 @@ def test_default_offload_is_model_for_flux():
 
 
 def test_map_load_error_classifies_before_gated_fallback():
-    from localai.capabilities.text_to_image.adapter import _map_load_error
+    from localai.capabilities.image.text_to_image.adapter import _map_load_error
     from localai.core.errors import GatedModelError, NetworkError, OutOfMemoryError
 
     # A gated model must still surface OOM and network with their true codes.

@@ -7,6 +7,6 @@ registry (via ``adapter`` import side effect) and the PNG image writer.
 from __future__ import annotations
 
 # Importing the adapter self-registers the capability + its image writer.
-from localai.capabilities.text_to_image import adapter  # noqa: F401
+from localai.capabilities.image.text_to_image import adapter  # noqa: F401
 
 __all__ = ["adapter"]

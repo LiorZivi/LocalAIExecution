@@ -139,7 +139,7 @@ def _generate_handler(adapter: Any, args: argparse.Namespace) -> int:
 
 
 def _interactive_handler(adapter: Any, args: argparse.Namespace) -> int:
-    from localai.capabilities.text_to_image.repl import run_repl
+    from localai.capabilities.image.text_to_image.repl import run_repl
 
     json_mode = bool(getattr(args, "json_mode", False))
     capability_id = adapter.capability_id

@@ -44,6 +44,6 @@ def test_incomplete_adapter_does_not_satisfy_protocol():
 
 
 def test_real_text_to_image_adapter_conforms():
-    from localai.capabilities.text_to_image.adapter import TextToImageAdapter
+    from localai.capabilities.image.text_to_image.adapter import TextToImageAdapter
 
     assert isinstance(TextToImageAdapter(), CapabilityAdapter)

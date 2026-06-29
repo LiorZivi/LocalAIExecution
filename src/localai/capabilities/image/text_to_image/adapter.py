@@ -24,9 +24,9 @@ from localai.core.interfaces import Artifact, InferenceRequest
 from localai.core.metadata import ProvenanceRecord, utc_now_iso
 from localai.core.registry import ModelSpec, register_capability
 
-from localai.capabilities.text_to_image import writer as _writer  # noqa: F401 (registers writer)
-from localai.capabilities.text_to_image.models import CAPABILITY_ID, MODELS
-from localai.capabilities.text_to_image.sizes import resolve_size
+from localai.capabilities.image.text_to_image import writer as _writer  # noqa: F401 (registers writer)
+from localai.capabilities.image.text_to_image.models import CAPABILITY_ID, MODELS
+from localai.capabilities.image.text_to_image.sizes import resolve_size
 
 _MAX_SEED = 2**32 - 1
 
@@ -58,7 +58,7 @@ class TextToImageAdapter:
         return list(MODELS)
 
     def register_cli(self, subparsers: Any, shared_parents: List[Any]) -> None:
-        from localai.capabilities.text_to_image import cli as t2i_cli
+        from localai.capabilities.image.text_to_image import cli as t2i_cli
 
         t2i_cli.register(self, subparsers, shared_parents)
 

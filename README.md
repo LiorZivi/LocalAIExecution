@@ -252,7 +252,8 @@ src/localai/
     cli.py              top-level dispatcher + --json contract
     interfaces.py       the CapabilityAdapter contract
   capabilities/
-    text_to_image/      the FLUX adapter (the only capability today)
+    image/                image modality group (future: video/, audio/)
+      text_to_image/      the FLUX adapter (first image capability)
 scripts/bootstrap.ps1   GPU-aware setup (cu128 PyTorch)
 config.example.toml     example layered configuration
 docs/                   architecture, file/model layout, contracts, validation

@@ -30,7 +30,10 @@ typed errors/exit codes, and the `--json` contract.
 
 ## Steps
 
-1. **Create the package** `src\localai\capabilities\<your_capability>\` with:
+1. **Create the package** under the right **modality group**. An image capability
+   goes in `src\localai\capabilities\image\<your_capability>\`; a brand-new
+   modality goes in a new `src\localai\capabilities\<modality>\<your_capability>\`
+   (give the modality folder its own `__init__.py` too). It contains:
    - `models.py` — one `ModelSpec` per model (id, HF repo, pipeline class,
      defaults, gated flag, dtype, etc.).
    - `adapter.py` — your `CapabilityAdapter` implementation. At import time call
@@ -43,11 +46,13 @@ typed errors/exit codes, and the `--json` contract.
      `register_writer("<type>", write_fn, "<ext>")` (`src\localai\core\output.py`).
      The core writes the `.json` sidecar for you.
 
-2. **Register it (the one line)** — add an import to
-   `src\localai\capabilities\__init__.py`:
+2. **Register it (the one line)** — add an import to the **modality manifest**.
+   For an image capability that is `src\localai\capabilities\image\__init__.py`:
    ```python
-   from localai.capabilities import your_capability  # noqa: F401
+   from localai.capabilities.image import your_capability  # noqa: F401
    ```
+   For a brand-new modality, also add one line to
+   `src\localai\capabilities\__init__.py`: `from localai.capabilities import your_modality`.
 
 That's it. The dispatcher auto-discovers your capability, lists it under
 `localai capabilities`, and exposes your subcommands. **No core module changes.**
@@ -66,6 +71,6 @@ That's it. The dispatcher auto-discovers your capability, lists it under
 ## Reference
 
 The text-to-image capability under
-`src\localai\capabilities\text_to_image\` is a complete worked example:
+`src\localai\capabilities\image\text_to_image\` is a complete worked example:
 `models.py`, `adapter.py`, `cli.py`, `repl.py`, `sizes.py`, `writer.py`, and the
 single import line in `src\localai\capabilities\__init__.py`.

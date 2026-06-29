@@ -1,28 +1,46 @@
 # Copilot instructions — LocalAIExecution
 
-This repo is an **already-built** local-AI execution platform. For orientation
-read `AGENTS.md` (maintainer context); for user-facing details see `README.md`,
-`docs/skill-invocation.md`, and `docs/adding-a-capability.md`.
-`plans/LocalAIExecution-spec.md` / `plans/LocalAIExecution-plan.md` are the historical
-intent + implementation record.
+This repo is an **already-built**, generic **local-AI execution platform**: a
+reusable, modality-agnostic core/runtime plus pluggable capability adapters.
+These instructions are **project-wide**. Modality- or path-specific guidance
+lives in scoped files under `.github\instructions\` (applied automatically by
+path):
 
-Key constraints (full detail in `AGENTS.md`):
+- `.github\instructions\docs.instructions.md` — writing docs under `docs\`.
+- `.github\instructions\image-capability.instructions.md` — the image capability
+  group under `src\localai\capabilities\image\`.
 
-- A **local-AI execution platform** (reusable core + pluggable model adapters);
-  **text-to-image (FLUX) is the first and only capability**. Self-contained
-  Python `diffusers` — **not** ComfyUI. Adding a model = new adapter module + one
-  import line; **no core changes**. Don't build other modalities without an ask.
-- Default model `black-forest-labs/FLUX.1-schnell` (~4 steps, guidance 0);
-  optional gated `black-forest-labs/FLUX.1-dev` (~20–50 steps, guidance ~3.5).
-  Both are **login-gated on Hugging Face** — a one-time HF token is needed to
-  *download* weights (`HF_TOKEN` / `hf auth login`); generation is then local.
-- Target GPU **RTX 5090 (Blackwell, sm_120)**: PyTorch **must** be the CUDA 12.8
-  (cu128) build (`https://download.pytorch.org/whl/cu128`); run `localai doctor`
-  to verify CUDA-on-GPU (no CPU fallback). Installed/verified: torch 2.11.0+cu128.
-- **VRAM:** FLUX bf16 (~33 GB) exceeds the 32 GB card — the capability defaults
-  to `offload=model`; don't force `offload=none`.
-- CLI contract is **stable/scriptable**: one-shot prints the saved absolute path
-  as the final stdout line; `--json` emits one provenance object on stdout.
-- Build/test: setup via `scripts/bootstrap.ps1`; run `.venv\Scripts\python.exe -m
-  pytest` (63 GPU-free tests). Never commit `.venv/`, `outputs/`, the HF cache,
-  or tokens.
+For orientation read `AGENTS.md`; user-facing details are in `README.md`,
+`docs\HighLevelArchitecture.md`, `docs\FilesAndModelsStructure.md`,
+`docs\skill-invocation.md`, and `docs\adding-a-capability.md`.
+`plans\LocalAIExecution-spec.md` / `plans\LocalAIExecution-plan.md` are the
+historical intent + implementation record.
+
+## Project-wide constraints
+
+- **Architecture:** a reusable core (`src\localai\core`) plus pluggable capability
+  adapters (`src\localai\capabilities\*`). The core is modality-agnostic — it must
+  contain **no** model-, image-, or capability-specific logic. Capabilities are
+  grouped by modality: `src\localai\capabilities\image\` today, with future
+  siblings like `video\` / `audio\`. Adding a capability = a new adapter module +
+  one import line in the relevant modality manifest (and a new modality = one line
+  in `src\localai\capabilities\__init__.py`) — **never edit the core** to add one.
+- **Target GPU: RTX 5090 (Blackwell, sm_120).** PyTorch **must** be the CUDA 12.8
+  (cu128) build (`https://download.pytorch.org/whl/cu128`); standard PyPI/cu121
+  wheels don't support sm_120. Verify the GPU stack with `localai doctor` before
+  any model work — **no CPU fallback**. (Installed/verified: torch 2.11.0+cu128.)
+- **Self-contained** Python using Hugging Face `diffusers` — **not** ComfyUI, no
+  running-server dependency.
+- **CLI contract is stable and scriptable** (a future skill depends on it):
+  one-shot commands print the saved absolute artifact path as the final stdout
+  line; the global `--json` flag emits exactly one provenance object on stdout
+  (diagnostics go to stderr). Exit codes are deterministic — see
+  `docs\skill-invocation.md`.
+- **Models download to the shared Hugging Face cache** (outside the repo, under
+  `%USERPROFILE%\.cache\huggingface\hub`), not into the project. After the first
+  download the tool runs offline.
+- **Build/test:** set up with `scripts\bootstrap.ps1`; run the GPU-free unit suite
+  with `.venv\Scripts\python.exe -m pytest`. **Never commit** `.venv\`, `outputs\`,
+  the Hugging Face cache, or any token.
+- **Scope discipline:** don't add new modalities or capabilities without an
+  explicit ask.

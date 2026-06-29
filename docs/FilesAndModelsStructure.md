@@ -41,15 +41,17 @@ LocalAIExecution/
 │   │   ├── output.py             # writers + collision-safe filenames
 │   │   └── errors.py             # typed errors + exit codes
 │   └── capabilities/
-│       ├── __init__.py           # the registration manifest (1 import/capability)
-│       └── text_to_image/        # the FLUX adapter (only capability today)
-│           ├── __init__.py       # imports adapter (self-registers)
-│           ├── adapter.py        # load_pipeline + run + error mapping
-│           ├── models.py         # schnell / dev ModelSpecs
-│           ├── sizes.py          # presets + dimension validation
-│           ├── writer.py         # PNG image writer (registers type "image")
-│           ├── cli.py            # generate + interactive subcommands
-│           └── repl.py           # resident interactive loop
+│       ├── __init__.py           # manifest: imports each modality group
+│       └── image/                # image modality group (future siblings: video/, audio/)
+│           ├── __init__.py       # imports each image capability
+│           └── text_to_image/    # the FLUX adapter (first image capability)
+│               ├── __init__.py   # imports adapter (self-registers)
+│               ├── adapter.py    # load_pipeline + run + error mapping
+│               ├── models.py     # schnell / dev ModelSpecs
+│               ├── sizes.py      # presets + dimension validation
+│               ├── writer.py     # PNG image writer (registers type "image")
+│               ├── cli.py        # generate + interactive subcommands
+│               └── repl.py       # resident interactive loop
 │
 ├── tests/                        # 63 GPU-free unit tests (pytest)
 │   ├── conftest.py               # GPU-free dummy adapter fixture
@@ -82,6 +84,10 @@ so weights and secrets can never be committed by accident.
 Lives inside the repo folder but is **git-ignored**. It holds the Python
 interpreter copy and every installed library. The heavyweight is PyTorch
 (the cu128 CUDA runtime ships inside the wheel).
+
+Each library installs as a folder under `.venv\Lib\site-packages\` — so `torch`
+is at `.venv\Lib\site-packages\torch\`, `diffusers` at
+`.venv\Lib\site-packages\diffusers\`, and so on for every row below.
 
 | Library | Version (verified) | Role |
 |---------|--------------------|------|

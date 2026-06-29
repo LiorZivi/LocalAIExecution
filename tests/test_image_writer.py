@@ -7,7 +7,7 @@ from pathlib import Path
 
 from PIL import Image
 
-import localai.capabilities.text_to_image.writer  # noqa: F401 (registers writer)
+import localai.capabilities.image.text_to_image.writer  # noqa: F401 (registers writer)
 from localai.core.config import Settings
 from localai.core.interfaces import Artifact
 from localai.core.metadata import ProvenanceRecord

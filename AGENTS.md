@@ -11,9 +11,11 @@
 A dedicated **local-AI-model execution platform** that runs AI models on the
 user's own GPU with **no cloud services**. It is a reusable, modality-agnostic
 **core/runtime** (`src\localai\core`) plus pluggable **capability adapters**
-(`src\localai\capabilities\*`). The **first and only capability is text-to-image**
-(FLUX). Adding a future model = a new adapter module + one import line in
-`src\localai\capabilities\__init__.py`, with **no changes to the core**.
+(`src\localai\capabilities\*`). The **first capability is text-to-image** (FLUX),
+under the `image` modality group. Capabilities are grouped by modality
+(`src\localai\capabilities\image\` today, with future siblings like `video\` /
+`audio\`); adding one is a new adapter module + one import line in its modality
+manifest — with **no changes to the core**.
 
 Standalone repo, published to GitHub; intended to later be invoked by a
 marketplace skill — so the CLI contract (one-shot prints the saved absolute path
@@ -29,7 +31,7 @@ as the final stdout line; `--json` emits one provenance object) must stay
   **artifact + provenance** writer (collision-safe filenames + sidecar JSON),
   typed **errors** with deterministic exit codes, and the **CLI dispatcher** with
   the shared `--json` contract.
-- `src\localai\capabilities\text_to_image` — the FLUX adapter (schnell/dev specs,
+- `src\localai\capabilities\image\text_to_image` — the FLUX adapter (schnell/dev specs,
   size presets, PNG writer, `generate` one-shot, interactive REPL). The PNG +
   sidecar-JSON writer is the only concrete artifact writer.
 

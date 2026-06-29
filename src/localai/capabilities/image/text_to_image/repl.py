@@ -206,7 +206,7 @@ def _handle_command(
             spec=spec,
             capability_defaults=getattr(adapter, "capability_defaults", None),
         )
-        from localai.capabilities.text_to_image.sizes import resolve_size
+        from localai.capabilities.image.text_to_image.sizes import resolve_size
 
         try:
             width, height = resolve_size(
