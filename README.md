@@ -51,10 +51,10 @@ Useful flags:
 ```
 
 > Models download to the Hugging Face cache (default
-> `%USERPROFILE%\.cache\huggingface`). Set `HF_HOME` — or pass `-ModelsDir` — to
-> keep all local models in one shared root; see
+> `%USERPROFILE%\.cache\huggingface\hub`). Set `HF_HUB_CACHE` — or pass
+> `-ModelsDir` — to put models in a clean folder of your choice; see
 > [`docs/FilesAndModelsStructure.md`](docs/FilesAndModelsStructure.md) §6
-> (including how to share that root with ComfyUI).
+> (including how to share a root with ComfyUI).
 
 ### Manual setup (equivalent)
 

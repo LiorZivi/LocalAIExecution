@@ -23,9 +23,10 @@
     are never auto-downloaded.
 
 .PARAMETER ModelsDir
-    Optional shared model-cache root. If given, sets `HF_HOME` to this path
-    (persistently for your user) so all Hugging Face models download here instead
-    of `%USERPROFILE%\.cache\huggingface`. Example: C:\AI\LocalModels\huggingface.
+    Optional model-cache directory. If given, sets `HF_HUB_CACHE` to this path
+    (persistently for your user) so Hugging Face models download *directly* here
+    (no `hub\` wrapper) instead of `%USERPROFILE%\.cache\huggingface\hub`.
+    Example: C:\AI\LocalModels\huggingface.
 
 .EXAMPLE
     ./scripts/bootstrap.ps1
@@ -55,13 +56,13 @@ $Localai    = Join-Path $RepoRoot ".venv\Scripts\localai.exe"
 function Write-Step($msg) { Write-Host "`n=== $msg ===" -ForegroundColor Cyan }
 function Fail($msg) { Write-Host "BOOTSTRAP FAILED: $msg" -ForegroundColor Red; exit 1 }
 
-# 0. Optional shared model cache root -----------------------------------------
+# 0. Optional model cache directory ------------------------------------------
 if ($ModelsDir) {
-    Write-Step "Setting HF_HOME to $ModelsDir (shared model cache)"
+    Write-Step "Setting HF_HUB_CACHE to $ModelsDir (model cache dir)"
     New-Item -ItemType Directory -Force $ModelsDir | Out-Null
-    $env:HF_HOME = $ModelsDir
-    [Environment]::SetEnvironmentVariable('HF_HOME', $ModelsDir, 'User')
-    Write-Host "HF_HOME=$env:HF_HOME (persisted for your user)"
+    $env:HF_HUB_CACHE = $ModelsDir
+    [Environment]::SetEnvironmentVariable('HF_HUB_CACHE', $ModelsDir, 'User')
+    Write-Host "HF_HUB_CACHE=$env:HF_HUB_CACHE (persisted for your user)"
 }
 
 # 1. Python 3.12 -------------------------------------------------------------
